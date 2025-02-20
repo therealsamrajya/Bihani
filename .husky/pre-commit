@@ -1,1 +1,22 @@
-npm test
+#!/bin/sh
+. "$(dirname "$0")/common.sh"
+
+echo "===\n>> Checking branch name..."
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+PROTECTED_BRANCHES="^(main|master)"
+
+if [ -z "$SKIP_BRANCH_PROTECTION" ]; then
+    if echo "$BRANCH" | grep -Eq "$PROTECTED_BRANCHES"; then
+        echo ">> Direct commits to the $BRANCH branch are not allowed. Please create a new branch."
+        exit 1
+    fi
+else
+    echo ">> Skipping branch protection."
+fi
+
+echo ">> Running type checking and linting..."
+pnpm type-check || { echo "❌ Type checking failed"; exit 1; }
+pnpm lint-staged || { echo "❌ Linting failed"; exit 1; }
+
+echo "✅ Pre-commit hook passed!"
