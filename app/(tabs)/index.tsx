@@ -3,11 +3,13 @@ import Button from "@/components/ui/Button";
 export default function Index() {
   return (
     <View
+      className="bg-background"
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-      }}>
+      }}
+    >
       <Text className="text-3xl font-PoppinsBold text-red-600">
         Hello test test sam
       </Text>
