@@ -5,12 +5,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#fffffe",
-        primary: "#181818",
-        button: "#4fc4cf",
+        background: "#F8F9FA",
+        primary: "#4A90E2", // for button navbar active icons
+        title: "#1E3A8A",
+        subtitle: "#666666",
         text: "#2e2e2e",
-        secondary: "#994ff3",
-        tertiary: "#fbdd74",
+        secondary: "#5CB85C", //for success messages , progress bar
+        tertiary: "#FF9800", // for reminders pending notification badges , call to action button
       },
       fontFamily: {
         PoppinsBold: ["PoppinsBold"],
