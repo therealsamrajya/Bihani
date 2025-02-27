@@ -1,5 +1,7 @@
 import { Text, View } from "react-native";
 import Button from "@/components/ui/Button";
+import StepsCalculator from "@/components/StepsCalculator";
+import React from "react";
 export default function Index() {
   return (
     <View
@@ -14,6 +16,7 @@ export default function Index() {
         Hello test test sam
       </Text>
       <Button title="Press me" onPress={() => console.log("Pressed")} />
+      <StepsCalculator />
     </View>
   );
 }
