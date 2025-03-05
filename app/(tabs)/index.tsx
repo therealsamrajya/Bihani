@@ -1,7 +1,8 @@
-import { Text, View } from "react-native";
-import Button from "@/components/ui/Button";
+import { View } from "react-native";
+
 import StepsCalculator from "@/components/StepsCalculator";
 import React from "react";
+import WaterCounter from "@/components/WaterCounter";
 export default function Index() {
   return (
     <View
@@ -12,11 +13,10 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text className="text-3xl font-PoppinsBold text-red-600">
-        Hello test test sam
-      </Text>
-      <Button title="Press me" onPress={() => console.log("Pressed")} />
-      <StepsCalculator />
+      <View className="flex flex-row items-center justify-center">
+        <StepsCalculator />
+        <WaterCounter />
+      </View>
     </View>
   );
 }

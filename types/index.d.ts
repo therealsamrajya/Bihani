@@ -8,3 +8,15 @@ export interface ButtonProps {
   accessibilityLabel?: string;
   accessibilityHint?: string;
 }
+
+export interface CircleDisplayProps {
+  value: string | number;
+  unit: string;
+  size?: number;
+  backgroundColor?: string;
+  valueColor?: string;
+  unitColor?: string;
+  valueSize?: number;
+  unitSize?: number;
+  style?: ViewStyle;
+}
