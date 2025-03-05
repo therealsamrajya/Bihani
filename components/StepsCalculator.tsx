@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Pedometer } from "expo-sensors";
 import * as Device from "expo-device";
+import CircleDisplay from "./ui/CircleDisplay";
 
 const StepsCalculator = () => {
   const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
@@ -64,21 +65,26 @@ const StepsCalculator = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View className=" border border-black" style={styles.container}>
       {error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
       ) : (
-        <View style={styles.contentContainer}>
-          <View style={styles.stepsCircle}>
-            <Text style={styles.stepsNumber}>{formattedSteps}</Text>
-            <Text style={styles.stepsLabel}>steps</Text>
-          </View>
+        <View className="font-PoppinsRegular" style={styles.contentContainer}>
+          {/* Using the new CircleDisplay component instead of the hardcoded stepsCircle */}
+          <CircleDisplay
+            value={formattedSteps}
+            unit="steps"
+            size={100}
+            backgroundColor="#4A90E2"
+          />
 
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>Tracking since: {startTime}</Text>
-            <Text style={styles.infoText}>
+          <View className=" hidden" style={styles.infoContainer}>
+            <Text className="font-PoppinsRegular" style={styles.infoText}>
+              Tracking since: {startTime}
+            </Text>
+            <Text className="font-PoppinsRegular" style={styles.infoText}>
               Device: {Device.modelName || "Unknown device"}
             </Text>
             <Text style={styles.deviceCompatibility}>
@@ -96,10 +102,11 @@ const StepsCalculator = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginBottom: 227,
     padding: 16,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F8F9FA",
   },
   loadingText: {
     fontSize: 18,
@@ -120,26 +127,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     alignItems: "center",
     width: "100%",
-  },
-  stepsCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 30,
-    elevation: 4,
-  },
-  stepsNumber: {
-    fontSize: 40,
-    fontWeight: "bold",
-    color: "white",
-  },
-  stepsLabel: {
-    fontSize: 18,
-    color: "white",
-    opacity: 0.8,
   },
   infoContainer: {
     width: "100%",
