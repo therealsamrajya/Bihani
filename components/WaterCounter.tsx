@@ -16,7 +16,7 @@ const WaterCounter = () => {
   };
 
   return (
-    <View className=" border border-black" style={styles.container}>
+    <View style={styles.container}>
       <CircleDisplay
         value={waterCount}
         unit="Glasses"
