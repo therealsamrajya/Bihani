@@ -1,10 +1,11 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React from "react";
+import SignUp from "@/components/form/SignUp";
 
 const profile = () => {
   return (
     <View>
-      <Text>profile</Text>
+      <SignUp />
     </View>
   );
 };

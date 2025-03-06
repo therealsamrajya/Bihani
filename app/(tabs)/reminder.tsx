@@ -1,10 +1,11 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React from "react";
+import Login from "@/components/form/Login";
 
 const reminder = () => {
   return (
     <View>
-      <Text>reminder</Text>
+      <Login />
     </View>
   );
 };

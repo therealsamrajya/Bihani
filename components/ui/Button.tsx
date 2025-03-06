@@ -6,7 +6,7 @@ const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
   backgroundColor = "bg-button",
-  textColor = "text-primary",
+  textColor = "text-text",
   style,
   disabled = false,
   accessibilityLabel,
@@ -20,16 +20,19 @@ const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       onPress={onPress}
       className={`
-        px-4 
-        py-4 
+        px-5
+        py-3
         rounded-lg 
         ${backgroundColor} 
         ${disabled ? "opacity-50" : "opacity-100"} 
         ${style}
         items-center 
         justify-center
-      `}>
-      <Text className={`text-lg font-medium ${textColor}`}>{title}</Text>
+      `}
+    >
+      <Text className={`text-lg font-PoppinsBold font-medium ${textColor}`}>
+        {title}
+      </Text>
     </Pressable>
   );
 };

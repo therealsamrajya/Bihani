@@ -65,7 +65,7 @@ const StepsCalculator = () => {
   }
 
   return (
-    <View className=" border border-black" style={styles.container}>
+    <View style={styles.container}>
       {error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
