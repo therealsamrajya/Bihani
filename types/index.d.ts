@@ -20,3 +20,13 @@ export interface CircleDisplayProps {
   unitSize?: number;
   style?: ViewStyle;
 }
+
+export interface HealthMetric {
+  icon: string;
+  title: string;
+  value: string | number;
+  unit: string;
+  color: string;
+  target?: string | number;
+  percentage?: number;
+}

@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 30, // Add extra padding at bottom
+    paddingBottom: 30,
   },
   container: {
     flex: 1,

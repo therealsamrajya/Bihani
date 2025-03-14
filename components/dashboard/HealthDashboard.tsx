@@ -9,16 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LineChart } from "react-native-chart-kit";
-
-interface HealthMetric {
-  icon: string;
-  title: string;
-  value: string | number;
-  unit: string;
-  color: string;
-  target?: string | number;
-  percentage?: number;
-}
+import { HealthMetric } from "@/types";
 
 const HealthDashboard = () => {
   const [currentDate, setCurrentDate] = useState("");
@@ -120,7 +111,9 @@ const HealthDashboard = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View>
+          {/* make dynamic user */}
           <Text style={styles.greeting}>Hello, User!</Text>
+
           <Text style={styles.date}>{currentDate}</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>
