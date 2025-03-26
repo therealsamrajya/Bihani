@@ -1,7 +1,7 @@
 import { View, ScrollView, StyleSheet, Text } from "react-native";
 import React from "react";
-import StepsCalculator from "@/components/StepsCalculator";
-import WaterCounter from "@/components/WaterCounter";
+import StepsCalculator from "@/components/steps-calculator/StepsCalculator";
+import WaterCounter from "@/components/water-counter/WaterCounter";
 
 export default function Index() {
   return (

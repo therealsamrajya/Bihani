@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "869194027350",
+    "project_id": "bihani-c2c16",
+    "storage_bucket": "bihani-c2c16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:869194027350:android:7d4669453d57b5c9a306f7",
+        "android_client_info": {
+          "package_name": "com.samrajya_chand.Bihani"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "869194027350-799bn525jnjti04uvq86u668lqvtda7d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.samrajya_chand.Bihani",
+            "certificate_hash": "4f302166aa21a2db69bc2f6b2c78f543ef4c032f"
+          }
+        },
+        {
+          "client_id": "869194027350-ksrsict1g56956ee7a5eadj5t2ddjdlp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6LnBU3uiUtA0LUrs6gQRYl6CXcudsJLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "869194027350-ksrsict1g56956ee7a5eadj5t2ddjdlp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

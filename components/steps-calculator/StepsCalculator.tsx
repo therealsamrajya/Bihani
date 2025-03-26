@@ -1,10 +1,11 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Pedometer } from "expo-sensors";
 import * as Device from "expo-device";
-import CircleDisplay from "./ui/CircleDisplay";
+import CircleDisplay from "../ui/CircleDisplay";
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
+import { styles } from "./styles";
 
 const StepsCalculator = () => {
   const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
@@ -184,119 +185,5 @@ const StepsCalculator = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "#555",
-  },
-  errorContainer: {
-    padding: 20,
-    backgroundColor: "#ffeeee",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ffcccc",
-  },
-  errorText: {
-    color: "#cc0000",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  contentContainer: {
-    alignItems: "center",
-    width: "100%",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#333",
-  },
-  goalContainer: {
-    width: "100%",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: "#E0E0E0",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#4CAF50",
-  },
-  goalText: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-    textAlign: "right",
-  },
-  milestoneContainer: {
-    backgroundColor: "#EBF5FF",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginVertical: 12,
-  },
-  milestoneText: {
-    fontSize: 16,
-    color: "#4A90E2",
-    fontWeight: "bold",
-  },
-  infoContainer: {
-    width: "100%",
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 12,
-    elevation: 1,
-  },
-  infoText: {
-    fontSize: 14,
-    marginBottom: 6,
-    color: "#666",
-  },
-  deviceCompatibility: {
-    fontSize: 14,
-    marginTop: 6,
-    fontWeight: "bold",
-    color: "#4CAF50",
-  },
-  graphTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 16,
-    marginBottom: 8,
-    color: "#333",
-    alignSelf: "flex-start",
-  },
-  chartContainer: {
-    marginTop: 4,
-    marginBottom: 16,
-    borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "white",
-    padding: 8,
-    elevation: 2,
-  },
-  chart: {
-    borderRadius: 16,
-  },
-});
 
 export default StepsCalculator;

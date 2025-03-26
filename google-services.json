@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "29391720141",
-    "project_id": "bihani-4c468",
-    "storage_bucket": "bihani-4c468.firebasestorage.app"
+    "project_number": "613789466480",
+    "project_id": "bihani-fc1dd",
+    "storage_bucket": "bihani-fc1dd.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:29391720141:android:9b308a9c77b61e194ea384",
+        "mobilesdk_app_id": "1:613789466480:android:a8c5033527d8d2d50159b5",
         "android_client_info": {
           "package_name": "com.samrajya_chand.Bihani"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD54IC3J0UAP0hoUB5s-eSFsU_BGJbr1ls"
+          "current_key": "AIzaSyAECOaroGeDCEa9WwsAioxb7c9vWgKS13U"
         }
       ],
       "services": {

@@ -5,12 +5,15 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
-import { loginUser } from "../../firebaseconfig";
+import React, { useState, useEffect } from "react";
+import { loginUser, useGoogleSignIn } from "../../firebaseconfig";
 import { Ionicons } from "@expo/vector-icons";
 import HealthDashboard from "../dashboard/HealthDashboard";
-
+import { doc, getDoc } from "firebase/firestore";
+import { db, saveUserData } from "../../firebaseconfig";
+import useUserStore from "@/store/useuserStore";
 interface FormProps {
   onNavigatetoRegister: () => void;
 }
@@ -22,28 +25,138 @@ const Login = ({ onNavigatetoRegister }: FormProps) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  const { setUser } = useUserStore();
+
+  // Initialize Google Sign-In hook
+  const { promptAsync, signInWithGoogle, response } = useGoogleSignIn();
+
+  // Email validation function
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Handle standard email/password login
   const handleLogin = async () => {
+    // Reset messages
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    // Form validation
     if (!email || !password) {
       setErrorMessage("Please fill in all fields");
-      setSuccessMessage("");
       return;
     }
 
+    if (!isValidEmail(email)) {
+      setErrorMessage("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      await loginUser(email, password);
-      setSuccessMessage(`Login successful`);
-      setErrorMessage("");
+      const userCredential = await loginUser(email, password);
+      setSuccessMessage("Login successful");
+
+      //check if user exists if not create it
+      const user = userCredential.user;
+      setUser({
+        userId: user.uid,
+        email: user.email || email,
+        name: user.displayName || "",
+      });
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+          // User doesn't have data in Firestore yet, create it
+          await saveUserData(user.uid, {
+            email: user.email || email,
+            name: user.displayName || "",
+            stepsGoal: 8000,
+            waterGoal: 10,
+          });
+        }
+      } catch (err) {
+        console.error("Error checking user data:", err);
+        // Continue with login even if this fails
+      }
 
       // Show dashboard after short delay
       setTimeout(() => {
         setIsLoggedIn(true);
       }, 1000);
     } catch (error: any) {
-      setErrorMessage(error.message);
-      setSuccessMessage("");
+      // Format Firebase error messages to be more user-friendly
+      let message = error.message || "Login failed. Please try again.";
+
+      if (message.includes("auth/invalid-email")) {
+        message = "Invalid email format";
+      } else if (message.includes("auth/user-not-found")) {
+        message = "No account exists with this email";
+      } else if (message.includes("auth/wrong-password")) {
+        message = "Incorrect password";
+      } else if (message.includes("auth/too-many-requests")) {
+        message = "Too many failed attempts. Please try again later";
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Handle Google Sign-In
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      await promptAsync();
+      // The response will be processed in useEffect
+    } catch (error: any) {
+      setErrorMessage("Google sign-in failed. Please try again.");
+      setIsGoogleLoading(false);
+    }
+  };
+
+  // Process Google Sign-In response
+  useEffect(() => {
+    const processGoogleSignIn = async () => {
+      if (response?.type === "success") {
+        try {
+          const userCredential = await signInWithGoogle();
+          if (userCredential) {
+            setSuccessMessage("Google login successful");
+
+            // Show dashboard after short delay
+            setTimeout(() => {
+              setIsLoggedIn(true);
+            }, 1000);
+          }
+        } catch (error: any) {
+          console.error("Google sign-in processing error:", error);
+          setErrorMessage(
+            "Failed to authenticate with Google. Please try again.",
+          );
+        } finally {
+          setIsGoogleLoading(false);
+        }
+      } else if (response?.type === "error") {
+        setErrorMessage("Google sign-in was canceled or failed");
+        setIsGoogleLoading(false);
+      }
+    };
+
+    if (response) {
+      processGoogleSignIn();
+    }
+  }, [response]);
 
   // If logged in, show the dashboard
   if (isLoggedIn) {
@@ -51,7 +164,7 @@ const Login = ({ onNavigatetoRegister }: FormProps) => {
   }
 
   return (
-    <View className="flex items-center" style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.headerText}>Welcome Back</Text>
       <Text style={styles.subHeaderText}>Sign in to continue</Text>
 
@@ -72,6 +185,7 @@ const Login = ({ onNavigatetoRegister }: FormProps) => {
               placeholder="Enter your email"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
             />
           </View>
         </View>
@@ -91,6 +205,7 @@ const Login = ({ onNavigatetoRegister }: FormProps) => {
               value={password}
               secureTextEntry={!showPassword}
               placeholder="Enter your password"
+              autoComplete="password"
             />
             <Pressable
               onPress={() => setShowPassword(!showPassword)}
@@ -111,8 +226,46 @@ const Login = ({ onNavigatetoRegister }: FormProps) => {
           </Pressable>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.disabledButton]}
+          onPress={handleLogin}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.separatorContainer}>
+          <View style={styles.separator} />
+          <Text style={styles.separatorText}>OR</Text>
+          <View style={styles.separator} />
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.button,
+            styles.googleButton,
+            isGoogleLoading && styles.disabledButton,
+          ]}
+          onPress={handleGoogleSignIn}
+          disabled={isGoogleLoading}
+        >
+          {isGoogleLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <>
+              <Ionicons
+                name="logo-google"
+                size={20}
+                color="#FFFFFF"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.buttonText}>Sign in with Google</Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {successMessage ? (
@@ -138,6 +291,7 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 10,
     flex: 1,
+    alignItems: "center",
   },
   headerText: {
     fontSize: 24,
@@ -200,11 +354,38 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginVertical: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#9CBAE5",
   },
   buttonText: {
     color: "white",
     fontWeight: "600",
     fontSize: 16,
+  },
+  separatorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  separator: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+  separatorText: {
+    paddingHorizontal: 10,
+    color: "#666",
+  },
+  googleButton: {
+    backgroundColor: "#4285F4",
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  buttonIcon: {
+    marginRight: 10,
   },
   successMessage: {
     marginTop: 12,

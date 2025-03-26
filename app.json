@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "com.samrajya_chand.Bihani",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -21,7 +21,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.samrajya_chand.Bihani"
+      "package": "com.samrajya_chand.Bihani",
+      "googleServicesFile": "./google-services.json"
+
     },
     "web": {
       "bundler": "metro",
@@ -38,8 +40,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ], ["@react-native-google-signin/google-signin"]
     ],
+   
     "experiments": {
       "typedRoutes": true
     },
