@@ -6,51 +6,22 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LineChart } from "react-native-chart-kit";
 import { HealthMetric } from "@/types";
+import useUserStore from "@/store/useuserStore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebaseconfig";
 
 const HealthDashboard = () => {
+  // Get user data from the store
+  const { userId, name, stepsGoal, waterGoal } = useUserStore();
+
   const [currentDate, setCurrentDate] = useState("");
-  const [metrics, setMetrics] = useState<HealthMetric[]>([
-    {
-      icon: "water-outline",
-      title: "Water Intake",
-      value: 5,
-      unit: "glasses",
-      color: "#4A90E2",
-      target: 8,
-      percentage: 62.5,
-    },
-    {
-      icon: "footsteps-outline",
-      title: "Steps",
-      value: 7254,
-      unit: "steps",
-      color: "#5CB85C",
-      target: 10000,
-      percentage: 72.5,
-    },
-    {
-      icon: "flame-outline",
-      title: "Calories Burned",
-      value: 420,
-      unit: "kcal",
-      color: "#FF9800",
-      target: 600,
-      percentage: 70,
-    },
-    {
-      icon: "bed-outline",
-      title: "Sleep",
-      value: "6h 45m",
-      unit: "",
-      color: "#8E44AD",
-      target: "8h 00m",
-      percentage: 84,
-    },
-  ]);
+  const [userData, setUserData] = useState<any>(null);
+  const [metrics, setMetrics] = useState<HealthMetric[]>([]);
 
   // Mock step data for the chart
   const stepData = {
@@ -65,6 +36,7 @@ const HealthDashboard = () => {
   };
 
   useEffect(() => {
+    // Set current date
     const date = new Date();
     const options: Intl.DateTimeFormatOptions = {
       weekday: "long",
@@ -73,7 +45,81 @@ const HealthDashboard = () => {
       day: "numeric",
     };
     setCurrentDate(date.toLocaleDateString("en-US", options));
-  }, []);
+
+    // Fetch user data from Firestore
+    if (!userId) {
+      Alert.alert("Error", "User ID not found");
+      return;
+    }
+
+    const userDocRef = doc(db, "users", userId);
+
+    // Set up real-time listener
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUserData(data);
+
+          // Update metrics based on Firestore data
+          setMetrics([
+            {
+              icon: "water-outline",
+              title: "Water Intake",
+              value: data.waterTaken || 0,
+              unit: "glasses",
+              color: "#4A90E2",
+              target: data.waterGoal,
+              percentage: data.waterTaken
+                ? Math.min(100, (data.waterTaken / waterGoal) * 100)
+                : 0,
+            },
+            {
+              icon: "footsteps-outline",
+              title: "Steps",
+              value: data.stepsTaken || 0,
+              unit: "steps",
+              color: "#5CB85C",
+              target: data.stepsGoal,
+              percentage: data.stepsTaken
+                ? Math.min(100, (data.stepsTaken / stepsGoal) * 100)
+                : 0,
+            },
+            {
+              icon: "flame-outline",
+              title: "Calories Burned",
+              value: data.caloriesBurned || 420,
+              unit: "kcal",
+              color: "#FF9800",
+              target: 600,
+              percentage: data.caloriesBurned
+                ? Math.min(100, (data.caloriesBurned / 600) * 100)
+                : 70,
+            },
+            {
+              icon: "bed-outline",
+              title: "Sleep",
+              value: data.sleepDuration || "6h 45m",
+              unit: "",
+              color: "#8E44AD",
+              target: "8h 00m",
+              percentage: data.sleepDuration ? 84 : 84,
+            },
+          ]);
+        } else {
+          Alert.alert("Error", "No user data found");
+        }
+      },
+      (error) => {
+        console.error("Error fetching user data:", error);
+        Alert.alert("Error", "Failed to fetch user data");
+      },
+    );
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
+  }, [userId, stepsGoal, waterGoal]);
 
   const incrementMetric = (index: number) => {
     const updatedMetrics = [...metrics];
@@ -111,9 +157,9 @@ const HealthDashboard = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View>
-          {/* make dynamic user */}
-          <Text style={styles.greeting}>Hello, User!</Text>
-
+          <Text style={styles.greeting}>
+            Hello, {userData?.name || "User"}!
+          </Text>
           <Text style={styles.date}>{currentDate}</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>

@@ -82,3 +82,7 @@ yarn-error.*
 # @end expo-cli
 
 firebaseconfig.ts
+
+credentials.json
+
+google-services.json

@@ -6,6 +6,9 @@ import CircleDisplay from "../ui/CircleDisplay";
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import { styles } from "./styles";
+import useUserStore from "@/store/useuserStore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/firebaseconfig";
 
 const StepsCalculator = () => {
   const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
@@ -16,8 +19,28 @@ const StepsCalculator = () => {
   const [subscription, setSubscription] = useState<any>(null);
   const [stepHistory, setStepHistory] = useState<number[]>([0, 0, 0, 0, 0, 0]);
   const [milestone, setMilestone] = useState<string>("Just started");
+  const [lastSavedSteps, setLastSavedSteps] = useState(0);
+
+  const { stepsGoal } = useUserStore();
 
   const screenWidth = Dimensions.get("window").width - 40;
+
+  const saveStepsToFirestore = async (steps: number) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        stepsTaken: steps,
+        lastStepUpdateTimestamp: new Date(),
+      });
+
+      setLastSavedSteps(steps);
+    } catch (error) {
+      console.error("Error saving steps:", error);
+    }
+  };
 
   useEffect(() => {
     const subscribe = async (): Promise<void> => {
@@ -32,16 +55,33 @@ const StepsCalculator = () => {
           const now = new Date();
           setStartTime(now.toLocaleTimeString());
 
-          // Start watching step count
-          const pedometerSubscription = Pedometer.watchStepCount((result) => {
-            setCurrentStepCount(result.steps);
+          const user = auth.currentUser;
+          if (user) {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            const savedSteps = userDoc.data()?.stepsTaken || 0;
+            setCurrentStepCount(savedSteps);
+            setLastSavedSteps(savedSteps);
+          }
 
-            // Update step history every time steps change
-            setStepHistory((prevHistory) => {
-              const newHistory = [...prevHistory.slice(1), result.steps];
-              return newHistory;
-            });
-          });
+          // Start watching step count
+          const pedometerSubscription = Pedometer.watchStepCount(
+            async (result) => {
+              const newStepCount = result.steps;
+              setCurrentStepCount(newStepCount);
+
+              // Update step history
+              setStepHistory((prevHistory) => {
+                const newHistory = [...prevHistory.slice(1), newStepCount];
+                return newHistory;
+              });
+              // Save steps to Firestore if significant change (e.g., 100 steps) or after a period of inactivity
+
+              if (Math.abs(newStepCount - lastSavedSteps) >= 100) {
+                await saveStepsToFirestore(newStepCount);
+              }
+            },
+          );
 
           setSubscription(pedometerSubscription);
         } else {
@@ -64,22 +104,23 @@ const StepsCalculator = () => {
     };
   }, []);
 
-  // Update milestone based on step count
   useEffect(() => {
-    if (currentStepCount >= 10000) {
+    const percentage = (currentStepCount / stepsGoal) * 100;
+
+    if (percentage >= 100) {
       setMilestone("Daily goal reached! 🎉");
-    } else if (currentStepCount >= 7500) {
+    } else if (percentage >= 75) {
       setMilestone("Almost there! 🏃‍♂️");
-    } else if (currentStepCount >= 5000) {
+    } else if (percentage >= 50) {
       setMilestone("Halfway to goal! 👍");
-    } else if (currentStepCount >= 2500) {
+    } else if (percentage >= 25) {
       setMilestone("Good progress! 👏");
     } else if (currentStepCount >= 1000) {
       setMilestone("Great start! 🚶‍♀️");
     } else if (currentStepCount > 0) {
       setMilestone("First steps taken! 🌱");
     }
-  }, [currentStepCount]);
+  }, [currentStepCount, stepsGoal]);
 
   // Format steps with thousands separator
   const formattedSteps = currentStepCount

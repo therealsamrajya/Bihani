@@ -5,42 +5,97 @@ import { BarChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
+import useUserStore from "@/store/useuserStore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db, auth } from "@/firebaseconfig";
 
 const WaterCounter = () => {
   const [waterCount, setWaterCount] = useState(0);
-  const [dailyGoal, setDailyGoal] = useState(8); // Default daily goal: 8 glasses
+  // Default daily goal: 8 glasses
   const [waterHistory, setWaterHistory] = useState<number[]>([
     3, 4, 5, 6, 4, 0,
   ]);
   const [milestone, setMilestone] = useState<string>("Start hydrating");
 
+  const { waterGoal } = useUserStore();
+
   const screenWidth = Dimensions.get("window").width - 40;
 
-  const incrementWater = () => {
-    setWaterCount(waterCount + 1);
+  const saveWaterIntakeToFirestore = async (glasses: number) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userDocRef = doc(db, "users", user.uid);
+      await updateDoc(userDocRef, {
+        waterTaken: glasses,
+        lastWaterUpdateTimestamp: new Date(),
+      });
+    } catch (error) {
+      console.error("Error saving water intake:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchInitialWaterIntake = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const savedWaterGlasses = userDoc.data()?.waterTaken || 0;
+
+        setWaterCount(savedWaterGlasses);
+        // Update the current day's data in the history
+        setWaterHistory((prev) => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1] = savedWaterGlasses;
+          return newHistory;
+        });
+      } catch (error) {
+        console.error("Error fetching water intake:", error);
+      }
+    };
+
+    fetchInitialWaterIntake();
+  }, []);
+
+  const incrementWater = async () => {
+    const newWaterCount = waterCount + 1;
+    setWaterCount(newWaterCount);
+
     // Update the current day's data in the history
     setWaterHistory((prev) => {
       const newHistory = [...prev];
-      newHistory[newHistory.length - 1] = waterCount + 1;
+      newHistory[newHistory.length - 1] = newWaterCount;
       return newHistory;
     });
+
+    // Save to Firestore
+    await saveWaterIntakeToFirestore(newWaterCount);
   };
 
-  const decrementWater = () => {
+  const decrementWater = async () => {
     if (waterCount > 0) {
-      setWaterCount(waterCount - 1);
+      const newWaterCount = waterCount - 1;
+      setWaterCount(newWaterCount);
+
       // Update the current day's data in the history
       setWaterHistory((prev) => {
         const newHistory = [...prev];
-        newHistory[newHistory.length - 1] = waterCount - 1;
+        newHistory[newHistory.length - 1] = newWaterCount;
         return newHistory;
       });
+
+      // Save to Firestore
+      await saveWaterIntakeToFirestore(newWaterCount);
     }
   };
 
   // Update milestone based on water intake
   useEffect(() => {
-    const percentage = (waterCount / dailyGoal) * 100;
+    const percentage = (waterCount / waterGoal) * 100;
 
     if (percentage >= 100) {
       setMilestone("Goal reached! 🎉");
@@ -55,11 +110,11 @@ const WaterCounter = () => {
     } else {
       setMilestone("Start hydrating");
     }
-  }, [waterCount, dailyGoal]);
+  }, [waterCount, waterGoal]);
 
   // Calculate percentage towards goal
   const goalPercentage = Math.min(
-    Math.round((waterCount / dailyGoal) * 100),
+    Math.round((waterCount / waterGoal) * 100),
     100,
   );
 
@@ -103,7 +158,7 @@ const WaterCounter = () => {
           <View style={[styles.progressBar, { width: `${goalPercentage}%` }]} />
         </View>
         <Text style={styles.goalText}>
-          {goalPercentage}% of daily goal ({waterCount}/{dailyGoal} glasses)
+          {goalPercentage}% of daily goal ({waterCount}/{waterGoal} glasses)
         </Text>
       </View>
 
