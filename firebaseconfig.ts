@@ -1,7 +1,6 @@
 // Import the necessary Firebase modules
-import { initializeApp } from "firebase/app";
+import { initializeApp, FirebaseApp, getApps } from "firebase/app";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   UserCredential,
@@ -10,52 +9,49 @@ import {
   User,
   GoogleAuthProvider,
   signInWithCredential,
+  initializeAuth,
+  getReactNativePersistence,
+  getAuth,
+  Auth,
 } from "firebase/auth";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, Firestore } from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC5JScRvA2OOBeCIh5atFpzaTJBK2zP4ak",
-  authDomain: "bihani-fc1dd.firebaseapp.com",
-  projectId: "bihani-fc1dd",
-  storageBucket: "bihani-fc1dd.firebasestorage.app",
-  messagingSenderId: "613789466480",
-  appId: "1:613789466480:web:89d44fbf473bc9610159b5",
+  apiKey: "AIzaSyDR4Em0Ce9UOpEi9XLFFLTYqIdMYKPQ0II",
+  authDomain: "bihani-a733d.firebaseapp.com",
+  projectId: "bihani-a733d",
+  storageBucket: "bihani-a733d.firebasestorage.app",
+  messagingSenderId: "287332360237",
+  appId: "1:287332360237:web:7689e7022559c35e5158a4",
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
 
-export const saveUserData = async (
-  userId: string,
-  userData: {
-    name?: string;
-    email: string;
-    stepsGoal?: number;
-    waterGoal?: number;
-    stepsTaken?: number;
-    waterTaken?: number;
-    createdAt?: Date;
-  }
-) => {
-  try {
-    const dataToSave = {
-      ...userData,
-      stepsTaken: userData.stepsTaken || 0,
-      waterTaken: userData.waterTaken || 0,
-      createdAt: userData.createdAt || new Date(),
-    };
+// Check if Firebase app is already initialized
+const apps = getApps();
+if (apps.length === 0) {
+  // If no Firebase app exists, initialize a new one
+  app = initializeApp(firebaseConfig);
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} else {
+  // If Firebase app already exists, use that one
+  app = apps[0];
+  auth = getAuth(app);
+}
 
-    await setDoc(doc(db, "users", userId), dataToSave);
-    return true;
-  } catch (error) {
-    console.error("Error saving user data:", error);
-  }
-};
+// Initialize Firestore
+db = getFirestore(app);
 
 // Initialize the WebBrowser for Auth
 WebBrowser.maybeCompleteAuthSession();
@@ -66,16 +62,16 @@ const googleProvider = new GoogleAuthProvider();
 // Function to handle user sign-up
 export const signUpUser = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<UserCredential> => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
-      password
+      password,
     );
     return userCredential;
-  } catch (error: any) {
+  } catch (error) {
     // Throw error so components can catch it
     throw error;
   }
@@ -84,16 +80,16 @@ export const signUpUser = async (
 // Function to handle user login
 export const loginUser = async (
   email: string,
-  password: string
+  password: string,
 ): Promise<UserCredential> => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
       email,
-      password
+      password,
     );
     return userCredential;
-  } catch (error: any) {
+  } catch (error) {
     // Throw error so components can catch it
     throw error;
   }
@@ -123,7 +119,7 @@ export const useGoogleSignIn = () => {
       }
 
       return null;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Google sign-in error:", error);
       throw error;
     }
@@ -144,8 +140,8 @@ export const getCurrentUser = (): User | null => {
 
 // Function to subscribe to auth state changes
 export const subscribeToAuthChanges = (
-  callback: (user: User | null) => void
-) => {
+  callback: (user: User | null) => void,
+): (() => void) => {
   return onAuthStateChanged(auth, callback);
 };
 

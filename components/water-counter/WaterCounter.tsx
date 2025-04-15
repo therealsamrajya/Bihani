@@ -6,12 +6,15 @@ import { Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
 import useUserStore from "@/store/useuserStore";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/firebaseconfig";
+import {
+  loadUserDataFromFirestore,
+  saveWaterIntakeToFirestore,
+} from "@/services/userService";
 
 const WaterCounter = () => {
   const [waterCount, setWaterCount] = useState(0);
-  // Default daily goal: 8 glasses
   const [waterHistory, setWaterHistory] = useState<number[]>([
     3, 4, 5, 6, 4, 0,
   ]);
@@ -21,26 +24,14 @@ const WaterCounter = () => {
 
   const screenWidth = Dimensions.get("window").width - 40;
 
-  const saveWaterIntakeToFirestore = async (glasses: number) => {
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        waterTaken: glasses,
-        lastWaterUpdateTimestamp: new Date(),
-      });
-    } catch (error) {
-      console.error("Error saving water intake:", error);
-    }
-  };
-
   useEffect(() => {
     const fetchInitialWaterIntake = async () => {
       try {
         const user = auth.currentUser;
         if (!user) return;
+
+        // Load user data including goals from Firestore
+        await loadUserDataFromFirestore(user.uid);
 
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
@@ -139,6 +130,10 @@ const WaterCounter = () => {
     },
     barPercentage: 0.7,
   };
+
+  useEffect(() => {
+    console.log("Current waterGoal from store:", waterGoal);
+  }, [waterGoal]);
 
   return (
     <View style={styles.container}>

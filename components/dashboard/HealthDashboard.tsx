@@ -17,7 +17,8 @@ import { db } from "../../firebaseconfig";
 
 const HealthDashboard = () => {
   // Get user data from the store
-  const { userId, name, stepsGoal, waterGoal } = useUserStore();
+  const { userId, name, stepsGoal, waterGoal, isAuthenticated } =
+    useUserStore();
 
   const [currentDate, setCurrentDate] = useState("");
   const [userData, setUserData] = useState<any>(null);
@@ -47,8 +48,7 @@ const HealthDashboard = () => {
     setCurrentDate(date.toLocaleDateString("en-US", options));
 
     // Fetch user data from Firestore
-    if (!userId) {
-      Alert.alert("Error", "User ID not found");
+    if (!isAuthenticated || !userId) {
       return;
     }
 

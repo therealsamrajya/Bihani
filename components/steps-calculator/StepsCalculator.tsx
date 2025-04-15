@@ -7,8 +7,12 @@ import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import { styles } from "./styles";
 import useUserStore from "@/store/useuserStore";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/firebaseconfig";
+import {
+  loadUserDataFromFirestore,
+  saveStepsToFirestore,
+} from "@/services/userService";
 
 const StepsCalculator = () => {
   const [isPedometerAvailable, setIsPedometerAvailable] = useState(false);
@@ -25,23 +29,6 @@ const StepsCalculator = () => {
 
   const screenWidth = Dimensions.get("window").width - 40;
 
-  const saveStepsToFirestore = async (steps: number) => {
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const userDocRef = doc(db, "users", user.uid);
-      await updateDoc(userDocRef, {
-        stepsTaken: steps,
-        lastStepUpdateTimestamp: new Date(),
-      });
-
-      setLastSavedSteps(steps);
-    } catch (error) {
-      console.error("Error saving steps:", error);
-    }
-  };
-
   useEffect(() => {
     const subscribe = async (): Promise<void> => {
       setIsLoading(true);
@@ -57,6 +44,9 @@ const StepsCalculator = () => {
 
           const user = auth.currentUser;
           if (user) {
+            // Load user data including goals from Firestore
+            await loadUserDataFromFirestore(user.uid);
+
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
             const savedSteps = userDoc.data()?.stepsTaken || 0;
@@ -79,6 +69,7 @@ const StepsCalculator = () => {
 
               if (Math.abs(newStepCount - lastSavedSteps) >= 100) {
                 await saveStepsToFirestore(newStepCount);
+                setLastSavedSteps(newStepCount);
               }
             },
           );
@@ -127,9 +118,9 @@ const StepsCalculator = () => {
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-  // Calculate percentage towards goal (10,000 steps)
+  // Calculate percentage towards goal using stepsGoal from the store
   const goalPercentage = Math.min(
-    Math.round((currentStepCount / 10000) * 100),
+    Math.round((currentStepCount / stepsGoal) * 100),
     100,
   );
 
@@ -159,6 +150,10 @@ const StepsCalculator = () => {
       stroke: "#4A90E2",
     },
   };
+
+  useEffect(() => {
+    console.log("Current steps goal from store:", stepsGoal);
+  }, [stepsGoal]);
 
   if (isLoading) {
     return (

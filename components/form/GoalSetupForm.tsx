@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { saveUserData, getCurrentUser } from "../../firebaseconfig";
+import { getCurrentUser } from "../../firebaseconfig";
 import useUserStore from "@/store/useuserStore";
+import { saveUserData } from "@/services/userService";
 
 interface GoalsSetupProps {
   email: string;
@@ -23,7 +24,7 @@ const GoalsSetupForm = ({ onComplete }: GoalsSetupProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { userId, email, name, setUser } = useUserStore();
+  const { userId, email, name, setUser, updateGoals } = useUserStore();
 
   const handleSaveGoals = async () => {
     setIsLoading(true);
@@ -47,6 +48,9 @@ const GoalsSetupForm = ({ onComplete }: GoalsSetupProps) => {
         userId: userId!,
         email: email!,
         name: name!,
+      });
+
+      updateGoals({
         stepsGoal: parseInt(stepsGoal),
         waterGoal: parseInt(waterGoal),
       });

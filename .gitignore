@@ -2,7 +2,6 @@
 
 # dependencies
 node_modules/
-
 # Expo
 .expo/
 dist/
@@ -81,8 +80,3 @@ yarn-error.*
 
 # @end expo-cli
 
-firebaseconfig.ts
-
-credentials.json
-
-google-services.json

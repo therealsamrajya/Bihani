@@ -8,8 +8,11 @@ import {
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
+import LogoutButton from "./LogoutButton";
+import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
+  const { user } = useAuth();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -31,6 +34,7 @@ const Header = () => {
               <Text style={styles.badgeText}>2</Text>
             </View>
           </TouchableOpacity>
+          {user && <LogoutButton />}
         </View>
       </View>
     </SafeAreaView>

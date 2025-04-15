@@ -13,6 +13,7 @@ import { signUpUser, useGoogleSignIn } from "../../firebaseconfig";
 import { Ionicons } from "@expo/vector-icons";
 import GoalsSetupForm from "./GoalSetupForm";
 import useUserStore from "@/store/useuserStore";
+import { saveUserData } from "../../services/userService";
 
 interface FormProps {
   onNavigatetoLogin: () => void;
@@ -84,11 +85,23 @@ const SignUp = ({ onNavigatetoLogin }: FormProps) => {
     try {
       const userCredential = await signUpUser(email, password);
       const user = userCredential.user;
+
+      await saveUserData(user.uid, {
+        name: name, // Use the name from the form explicitly
+        email: email,
+        // other optional fields
+      });
+
       setUser({
         userId: user.uid,
         email: user.email || email,
-        name: user.displayName || "",
+        name: name, // Use the name from the form
       });
+      // setUser({
+      //   userId: user.uid,
+      //   email: user.email || email,
+      //   name: user.displayName || "",
+      // });
       setSuccessMessage("Account created successfully!");
 
       //save basic user data and show goals setup

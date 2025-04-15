@@ -12,8 +12,9 @@ import { loginUser, useGoogleSignIn } from "../../firebaseconfig";
 import { Ionicons } from "@expo/vector-icons";
 import HealthDashboard from "../dashboard/HealthDashboard";
 import { doc, getDoc } from "firebase/firestore";
-import { db, saveUserData } from "../../firebaseconfig";
+import { db } from "../../firebaseconfig";
 import useUserStore from "@/store/useuserStore";
+import { saveUserData } from "@/services/userService";
 interface FormProps {
   onNavigatetoRegister: () => void;
 }
